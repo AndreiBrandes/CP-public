@@ -1,0 +1,35 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Docker Hub...
+      - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
+      - echo Build started on `date`
+      - echo Building the Docker images...
+  build:
+    commands:
+      - echo Building microservice1...
+      - cd microservice1
+      - docker build -t $DOCKERHUB_USER/microservice1:$CODEBUILD_BUILD_NUMBER .
+      - docker build -t $DOCKERHUB_USER/microservice1:latest .
+      - cd ..
+      - echo Building microservice2...
+      - cd microservice2
+      - docker build -t $DOCKERHUB_USER/microservice2:$CODEBUILD_BUILD_NUMBER .
+      - docker build -t $DOCKERHUB_USER/microservice2:latest .
+      - cd ..
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing Docker images...
+      - docker push $DOCKERHUB_USER/microservice1:$CODEBUILD_BUILD_NUMBER
+      - docker push $DOCKERHUB_USER/microservice1:latest
+      - docker push $DOCKERHUB_USER/microservice2:$CODEBUILD_BUILD_NUMBER
+      - docker push $DOCKERHUB_USER/microservice2:latest
+      - echo Writing image versions to file...
+      - echo "IMAGE_VERSION=$CODEBUILD_BUILD_NUMBER" > build.env
+      - echo "DOCKERHUB_USER=$DOCKERHUB_USER" >> build.env
+artifacts:
+  files:
+    - build.env
+    - '**/*'

@@ -1,0 +1,31 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo "Deployment started"
+      - echo "Reading build artifacts..."
+      - cat build.env
+      - export IMAGE_VERSION=$(grep IMAGE_VERSION build.env | cut -d= -f2)
+      - export DOCKERHUB_USER=$(grep DOCKERHUB_USER build.env | cut -d= -f2)
+      - echo "Image version is $IMAGE_VERSION"
+      - echo "Docker Hub user is $DOCKERHUB_USER"
+  build:
+    commands:
+      - echo Updating ECS task definitions...
+      - CLUSTER_NAME="devops-exam-cluster"
+      - TASK_DEF_MS1=$(aws ecs describe-task-definition --task-definition devops-exam-ms1 --query 'taskDefinition' --output json)
+      - NEW_TASK_DEF_MS1=$(echo $TASK_DEF_MS1 | jq --arg IMAGE "${DOCKERHUB_USER}/microservice1:${IMAGE_VERSION}" '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
+      - aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF_MS1" > /dev/null
+      - TASK_DEF_MS2=$(aws ecs describe-task-definition --task-definition devops-exam-ms2 --query 'taskDefinition' --output json)
+      - NEW_TASK_DEF_MS2=$(echo $TASK_DEF_MS2 | jq --arg IMAGE "${DOCKERHUB_USER}/microservice2:${IMAGE_VERSION}" '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
+      - aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF_MS2" > /dev/null
+  post_build:
+    commands:
+      - echo "Deploying to ECS..."
+      - CLUSTER_NAME="devops-exam-cluster"
+      - echo "Updating service devops-exam-ms1..."
+      - aws ecs update-service --cluster $CLUSTER_NAME --service devops-exam-ms1 --force-new-deployment --region $AWS_DEFAULT_REGION
+      - echo "Updating service devops-exam-ms2..."
+      - aws ecs update-service --cluster $CLUSTER_NAME --service devops-exam-ms2 --force-new-deployment --region $AWS_DEFAULT_REGION
+      - echo "Deployment triggered successfully"
+      - echo "Services will stabilize in 2-5 minutes"

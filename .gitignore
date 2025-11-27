@@ -1,0 +1,40 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+# AWS credentials
+*credentials*
+setup-aws-credentials.sh
+test-aws-credentials.sh
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+# OS
+.DS_Store
+Thumbs.db
+# Build artifacts
+source.zip
+# Helper scripts (not needed for submission)
+*.sh
+!deploy.sh
+!test.sh
+# Documentation (keep minimal)
+FIXES-SUMMARY.md
+EXAM-REQUIREMENTS-VERIFICATION.md
+REQUIREMENTS-CHECKLIST.md
+SUBMISSION-CHECKLIST.md
+CODEPIPELINE.md
+browse-resources.sh
