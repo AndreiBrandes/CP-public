@@ -27,6 +27,9 @@ aws codepipeline start-pipeline-execution --name devops-exam-pipeline
 
 how to test:
 get alb url from terraform output: terraform output alb_dns_name
+run test.sh: ./test.sh <alb-url> <your-token>
+or manually:
+
 curl -X POST http://<alb-url>/api/process -H "Content-Type: application/json" -d '{"token": "<your-token>", "data": {"email_subject": "test", "email_sender": "me", "email_timestream": "123", "email_content": "hello"}}'
 should return: {"message":"Request processed successfully"}
 wait 15 seconds, then check s3 bucket for the uploaded file
