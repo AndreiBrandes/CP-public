@@ -2,10 +2,12 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo Logging in to Docker Hub...
+      - python -m py_compile microservice1/app.py
+      - python -m py_compile microservice2/app.py
+      - pip install flake8
+      - flake8 microservice1/app.py --max-line-length=120 --ignore=E501,W503,E302
+      - flake8 microservice2/app.py --max-line-length=120 --ignore=E501,W503,E302
       - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
-      - echo Build started on `date`
-      - echo Building the Docker images...
   build:
     commands:
       - echo Building microservice1...
